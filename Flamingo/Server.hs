@@ -14,12 +14,15 @@ handle (h, _, _) = h
 
 run = bracket (listenOn $ PortNumber portNumber) sClose setupAndAcceptConnections
 
+setupAndAcceptConnections :: Socket -> IO b
 setupAndAcceptConnections = acceptConnections
 
+acceptConnections :: Socket -> IO b
 acceptConnections socket = do connection <- accept socket
                               forkIO $ (handleClient connection `finally` hClose (handle connection))
                               acceptConnections socket
 
+handleClient :: (Handle, t, t1) -> IO b
 handleClient connection@(handle,_,_) = do hFlush handle
                                           input <- hGetLine handle
                                           hPutStrLn handle input

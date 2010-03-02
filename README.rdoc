@@ -1,6 +1,8 @@
 = About
 This is a Haskell port of the MUD mire, which is written using the clojure programming language. The mire source code can be found here: http://github.com/technomancy/mire
 
+The only real goal of this project is to match the output of mire exactly.
+
 = Installation
 First, build and run the project: (assuming ghc)
     $ ghc --make Main.hs
