@@ -8,3 +8,5 @@ First, build and run the project: (assuming ghc)
 
 Then, open another tab and telnet to port 3333:
     $ telnet localhost 3333
+
+Now, by the magic of television, whatever data you type will be repeated back to you!
