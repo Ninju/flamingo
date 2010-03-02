@@ -6,15 +6,13 @@ import Control.Concurrent.STM
 import Control.Exception hiding (handle)
 import Flamingo.Commands (execute)
 
-type Connection = (Handle, String, PortNumber)
-
 prompt :: String
 prompt = "> "
 
 portNumber :: PortNumber
 portNumber = 3333
 
-handle :: Connection -> Handle
+handle :: (Handle, a, b) -> Handle
 handle (h, _, _) = h
 
 setupAndAcceptConnections :: Socket -> IO b
@@ -26,7 +24,7 @@ acceptConnections socket currentRoom = do connection <- accept socket
                                           forkIO $ (handleClient connection currentRoom `finally` hClose (handle connection))
                                           acceptConnections socket currentRoom
 
-handleClient :: Connection -> TVar a -> IO b
+handleClient :: (Handle, a, b) -> TVar c -> IO d
 handleClient connection@(handle,_,_) currentRoom = do hPutStr handle prompt
                                                       hFlush handle
                                                       input <- hGetLine handle
