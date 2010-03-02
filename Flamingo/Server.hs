@@ -3,6 +3,10 @@ import Network
 import System.IO
 import Control.Concurrent
 import Control.Exception hiding (handle)
+import Flamingo.Commands (execute)
+
+prompt :: String
+prompt = "> "
 
 type Connection = (Handle, String, PortNumber)
 
@@ -11,8 +15,6 @@ portNumber = 3333
 
 handle :: Connection -> Handle
 handle (h, _, _) = h
-
-run = bracket (listenOn $ PortNumber portNumber) sClose setupAndAcceptConnections
 
 setupAndAcceptConnections :: Socket -> IO b
 setupAndAcceptConnections = acceptConnections
@@ -23,7 +25,11 @@ acceptConnections socket = do connection <- accept socket
                               acceptConnections socket
 
 handleClient :: (Handle, t, t1) -> IO b
-handleClient connection@(handle,_,_) = do hFlush handle
+handleClient connection@(handle,_,_) = do hPutStr handle prompt
+                                          hFlush handle
                                           input <- hGetLine handle
-                                          hPutStrLn handle input
+                                          response <- (execute input)
+                                          hPutStrLn handle response
                                           handleClient connection
+
+run = bracket (listenOn $ PortNumber portNumber) sClose setupAndAcceptConnections
