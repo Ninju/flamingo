@@ -1,4 +1,4 @@
 module Main where
-import Server
+import Flamingo.Server
 
 main = run
