@@ -30,8 +30,7 @@ handleClient :: Connection -> TVar a -> IO b
 handleClient connection@(handle,_,_) currentRoom = do hPutStr handle prompt
                                                       hFlush handle
                                                       input <- hGetLine handle
-                                                      response <- (execute input)
-                                                      hPutStrLn handle response
+                                                      execute input
                                                       handleClient connection currentRoom
 
 run = bracket (listenOn $ PortNumber portNumber) sClose setupAndAcceptConnections
