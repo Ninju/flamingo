@@ -1,2 +1,10 @@
 = About
 This is a Haskell port of the MUD mire, which is written using the clojure programming language. The mire source code can be found here: http://github.com/technomancy/mire
+
+= Installation
+First, build the project:
+    ghc --make Main.hs
+    ./Main
+
+Then, open another tab and telnet to port 3333:
+    telnet localhost 3333
