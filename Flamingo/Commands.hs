@@ -11,4 +11,4 @@ command ("look":_) = return "You see an empty room, waiting to be filled."
 command _          = return "Invalid command"
 
 execute :: String -> IO String
-execute input = command (words input)
+execute = command . words
