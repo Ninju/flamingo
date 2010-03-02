@@ -1,6 +1,5 @@
 module Flamingo.Commands where
 import Time (getClockTime, toUTCTime, calendarTimeToString)
-import Text.Regex (splitRegex, mkRegex)
 
 currentTime :: IO String
 currentTime = do t <- getClockTime
