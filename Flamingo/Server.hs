@@ -5,10 +5,10 @@ import Control.Concurrent
 import Control.Exception hiding (handle)
 import Flamingo.Commands (execute)
 
+type Connection = (Handle, String, PortNumber)
+
 prompt :: String
 prompt = "> "
-
-type Connection = (Handle, String, PortNumber)
 
 portNumber :: PortNumber
 portNumber = 3333
@@ -17,19 +17,20 @@ handle :: Connection -> Handle
 handle (h, _, _) = h
 
 setupAndAcceptConnections :: Socket -> IO b
-setupAndAcceptConnections = acceptConnections
+setupAndAcceptConnections socket = do currentRoom <- newTVar "start"
+                                      acceptConnections socket currentRoom
 
 acceptConnections :: Socket -> IO b
-acceptConnections socket = do connection <- accept socket
-                              forkIO $ (handleClient connection `finally` hClose (handle connection))
-                              acceptConnections socket
+acceptConnections socket currentRoom = do connection <- accept socket
+                                          forkIO $ (handleClient connection currentRoom `finally` hClose (handle connection))
+                                          acceptConnections socket
 
-handleClient :: (Handle, t, t1) -> IO b
-handleClient connection@(handle,_,_) = do hPutStr handle prompt
-                                          hFlush handle
-                                          input <- hGetLine handle
-                                          response <- (execute input)
-                                          hPutStrLn handle response
-                                          handleClient connection
+handleClient :: Connection -> IO a
+handleClient connection@(handle,_,_) currentRoom = do hPutStr handle prompt
+                                                      hFlush handle
+                                                      input <- hGetLine handle
+                                                      response <- (execute input)
+                                                      hPutStrLn handle response
+                                                      handleClient connection
 
 run = bracket (listenOn $ PortNumber portNumber) sClose setupAndAcceptConnections
