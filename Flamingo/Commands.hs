@@ -12,4 +12,4 @@ command ("look":_) = return "You see an empty room, waiting to be filled."
 command _          = return "Invalid command"
 
 execute :: String -> IO String
-execute input = command (splitRegex (mkRegex "[\r ]+") input)
+execute input = command (words input)
