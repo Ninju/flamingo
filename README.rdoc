@@ -1,7 +1,2 @@
 = About
-
 This is a Haskell port of the MUD mire, which is written using the clojure programming language. The mire source code can be found here: http://github.com/technomancy/mire
-
-= Project Status
-
-- current echos any text entered
