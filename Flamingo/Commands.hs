@@ -16,13 +16,12 @@ move direction room = ask >>= \env -> lift $ maybe (return room) (f env) $ looku
 
 command :: [String] -> ReaderT Environment IO String
 command ("time":_)   = liftIO $ currentTime
-command ("look":_)   = return "You see an empty room, waiting to be filled."
+command ("look":_)   = asks currentRoom >>= lift . atomically . readTVar >>= return . show
 command ("move":[])  = return "Enter a direction in which to move."
 command ("move":d:_) = do tvR <- asks currentRoom
                           r   <- lift $ atomically $ readTVar tvR
                           if isExit d r
-                            then do newRoom <- move d r
-                                    return (show newRoom)
+                            then move d r >> return "\n"
                             else return "You can't go that way."
 command _            = return "Invalid command"
 

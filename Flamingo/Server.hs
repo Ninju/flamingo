@@ -34,7 +34,10 @@ acceptConnections socket currentRoom = do connection <- accept socket
 handleClient :: ReaderT Environment IO ()
 handleClient = do h   <- asks (handle . connection)
                   env <- ask
-                  liftIO $ forever $ do hPutStr h prompt
+                  tvR <- asks currentRoom
+                  liftIO $ forever $ do currentRoom <- atomically $ readTVar tvR
+                                        hPutStrLn h (show currentRoom)
+                                        hPutStr h prompt
                                         hFlush h
                                         input <- hGetLine h
                                         response <- runReaderT (execute input) env
