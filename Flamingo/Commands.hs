@@ -9,8 +9,8 @@ import Flamingo.Utils
 currentTime :: IO String
 currentTime = getClockTime >>= return . calendarTimeToString . toUTCTime
 
-move :: Direction -> Room -> ReaderT Environment IO ()
-move direction room = ask >>= \env -> lift $ maybe (return ()) (f env) $ lookup direction (exits room)
+move :: Direction -> Room -> ReaderT Environment IO Room
+move direction room = ask >>= \env -> lift $ maybe (return room) (f env) $ lookup direction (exits room)
                       where
                       f e room = runReaderT (setCurrentRoom room) e
 
@@ -21,8 +21,8 @@ command ("move":[])  = return "Enter a direction in which to move."
 command ("move":d:_) = do tvR <- asks currentRoom
                           r   <- lift $ atomically $ readTVar tvR
                           if isExit d r
-                            then do move d r
-                                    return "You have moved."
+                            then do newRoom <- move d r
+                                    return (show newRoom)
                             else return "You can't go that way."
 command _            = return "Invalid command"
 

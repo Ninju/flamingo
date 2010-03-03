@@ -16,8 +16,14 @@ prompt = "> "
 portNumber :: PortNumber
 portNumber = 3333
 
+startingRoom :: Room
+startingRoom = Room { exits = [("north", crampedCloset)], description = "You find yourself in a round room with a pillar in the middle." }
+
+crampedCloset :: Room
+crampedCloset = Room { exits = [("south",startingRoom)], description = "You are in a cramped closet." }
+
 setupAndAcceptConnections :: Socket -> IO b
-setupAndAcceptConnections socket = do currentRoom <- newTVarIO (Room { exits = [], description = "You are in a shit hole." })
+setupAndAcceptConnections socket = do currentRoom <- newTVarIO startingRoom
                                       acceptConnections socket currentRoom
 
 acceptConnections socket currentRoom = do connection <- accept socket
