@@ -16,6 +16,9 @@ command ("move":d:_) = do tvR <- asks currentRoom
                           if isExit d r
                             then move d r >>= return . (++ "\n") . show
                             else return "You can't go that way."
+command (d:_)        = if elem d ["north", "south", "east", "west"]
+                         then command ["move", d]
+                         else return "Invalid command"
 command _            = return "Invalid command"
 
 execute :: String -> ReaderT Environment IO String
