@@ -16,7 +16,7 @@ portNumber :: PortNumber
 portNumber = 3333
 
 setupAndAcceptConnections :: Socket -> IO b
-setupAndAcceptConnections socket = do currentRoom <- newTVarIO "start"
+setupAndAcceptConnections socket = do currentRoom <- newTVarIO (Room { exits = [], description = "You are in a shit hole." })
                                       acceptConnections socket currentRoom
 
 acceptConnections socket currentRoom = do connection <- accept socket
