@@ -6,8 +6,7 @@ import Control.Monad.Reader
 import Flamingo.Utils
 
 currentTime :: IO String
-currentTime = do t <- getClockTime
-                 return $ calendarTimeToString (toUTCTime t)
+currentTime = getClockTime >>= return . calendarTimeToString . toUTCTime
 
 command :: [String] -> ReaderT Environment IO String
 command ("time":_) = liftIO $ currentTime
