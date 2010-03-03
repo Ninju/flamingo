@@ -14,8 +14,5 @@ command ("time":_) = liftIO $ currentTime
 command ("look":_) = return "You see an empty room, waiting to be filled."
 command _          = return "Invalid command"
 
-execute :: String -> ReaderT Environment IO ()
-execute input = do h   <- asks (handle . connection)
-                   env <- ask
-                   let output = runReaderT (command (words input)) env
-                   liftIO $ hPutStrLn h =<< output
+execute :: String -> ReaderT Environment IO String
+execute = command . words

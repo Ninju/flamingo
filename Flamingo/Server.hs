@@ -30,6 +30,7 @@ handleClient = do h   <- asks (handle . connection)
                   liftIO $ forever $ do hPutStr h prompt
                                         hFlush h
                                         input <- hGetLine h
-                                        runReaderT (execute input) env
+                                        response <- runReaderT (execute input) env
+                                        hPutStrLn h response
 
 run = bracket (listenOn $ PortNumber portNumber) sClose setupAndAcceptConnections
