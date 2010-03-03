@@ -35,12 +35,11 @@ handleClient :: ReaderT Environment IO ()
 handleClient = do h   <- asks (handle . connection)
                   env <- ask
                   tvR <- asks currentRoom
-                  liftIO $ forever $ do currentRoom <- atomically $ readTVar tvR
-                                        hPutStrLn h (show currentRoom)
-                                        hPutStr h prompt
-                                        hFlush h
-                                        input <- hGetLine h
-                                        response <- runReaderT (execute input) env
-                                        hPutStrLn h response
+                  liftIO $ do (atomically $ readTVar tvR) >>= hPutStrLn h . (++ "\n") . show
+                              forever $ do hPutStr h prompt
+                                           hFlush h
+                                           input <- hGetLine h
+                                           response <- runReaderT (execute input) env
+                                           hPutStrLn h response
 
 run = bracket (listenOn $ PortNumber portNumber) sClose setupAndAcceptConnections
