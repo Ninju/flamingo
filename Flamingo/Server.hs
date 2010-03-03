@@ -8,6 +8,7 @@ import Control.Monad.Reader
 import Control.Exception hiding (handle)
 import Flamingo.Commands (execute)
 import Flamingo.Utils
+import Flamingo.Rooms
 
 prompt :: String
 prompt = "> "

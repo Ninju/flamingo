@@ -17,6 +17,7 @@ move direction room = ask >>= \env -> lift $ maybe (return ()) (f env) $ lookup 
 command :: [String] -> ReaderT Environment IO String
 command ("time":_)   = liftIO $ currentTime
 command ("look":_)   = return "You see an empty room, waiting to be filled."
+command ("move":[])  = return "Enter a direction in which to move."
 command ("move":d:_) = do tvR <- asks currentRoom
                           r   <- lift $ atomically $ readTVar tvR
                           if isExit d r
