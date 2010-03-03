@@ -14,12 +14,12 @@ move direction room = ask >>= \env -> lift $ maybe (return room) (flip runReader
 
 command :: [String] -> ReaderT Environment IO String
 command ("time":_)   = liftIO $ currentTime
-command ("look":_)   = asks currentRoom >>= lift . atomically . readTVar >>= return . show
+command ("look":_)   = asks currentRoom >>= lift . atomically . readTVar >>= return . (++ "\n") . show
 command ("move":[])  = return "Enter a direction in which to move."
 command ("move":d:_) = do tvR <- asks currentRoom
                           r   <- lift $ atomically $ readTVar tvR
                           if isExit d r
-                            then move d r >>= return . show
+                            then move d r >>= return . (++ "\n") . show
                             else return "You can't go that way."
 command _            = return "Invalid command"
 
