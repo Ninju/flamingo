@@ -1,0 +1,1 @@
+module Flamingo.Rooms where

@@ -3,8 +3,11 @@ import Network
 import System.IO
 import Control.Concurrent
 import Control.Concurrent.STM
+import Control.Monad
+import Control.Monad.Reader
 import Control.Exception hiding (handle)
 import Flamingo.Commands (execute)
+import Flamingo.Utils
 
 prompt :: String
 prompt = "> "
@@ -12,23 +15,21 @@ prompt = "> "
 portNumber :: PortNumber
 portNumber = 3333
 
-handle :: (Handle, a, b) -> Handle
-handle (h, _, _) = h
-
 setupAndAcceptConnections :: Socket -> IO b
 setupAndAcceptConnections socket = do currentRoom <- newTVarIO "start"
                                       acceptConnections socket currentRoom
 
-acceptConnections :: Socket -> TVar a -> IO b
 acceptConnections socket currentRoom = do connection <- accept socket
-                                          forkIO $ (handleClient connection currentRoom `finally` hClose (handle connection))
+                                          let env = Env { connection = connection, currentRoom = currentRoom }
+                                          forkIO $ (runReaderT handleClient env `finally` hClose (handle connection))
                                           acceptConnections socket currentRoom
 
-handleClient :: (Handle, a, b) -> TVar c -> IO d
-handleClient connection@(handle,_,_) currentRoom = do hPutStr handle prompt
-                                                      hFlush handle
-                                                      input <- hGetLine handle
-                                                      execute connection currentRoom input
-                                                      handleClient connection currentRoom
+handleClient :: ReaderT Environment IO ()
+handleClient = do h   <- asks (handle . connection)
+                  env <- ask
+                  liftIO $ forever $ do hPutStr h prompt
+                                        hFlush h
+                                        input <- hGetLine h
+                                        runReaderT (execute input) env
 
 run = bracket (listenOn $ PortNumber portNumber) sClose setupAndAcceptConnections
