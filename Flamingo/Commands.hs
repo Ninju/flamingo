@@ -1,24 +1,36 @@
 module Flamingo.Commands where
 import Control.Concurrent.STM
 import Control.Monad.Reader
+import System.IO
 import Flamingo.Rooms
 import Flamingo.Utils
 
-move :: Direction -> Room -> ReaderT Environment IO Room
-move direction room = ask >>= \env -> lift $ maybe (return room) (flip runReaderT env . setCurrentRoom) $ lookup direction (exits room)
+isDirection :: Direction -> Bool
+isDirection = flip elem ["north", "east", "south", "west"]
 
-command :: [String] -> ReaderT Environment IO String
-command ("look":_)   = asks currentRoom >>= lift . atomically . readTVar >>= return . (++ "\n") . show
-command ("move":[])  = return "Enter a direction in which to move."
-command ("move":d:_) = do tvR <- asks currentRoom
-                          r   <- lift $ atomically $ readTVar tvR
-                          if isExit d r
-                            then move d r >>= return . (++ "\n") . show
-                            else return "You can't go that way."
-command (d:_)        = if elem d ["north", "south", "east", "west"]
-                         then command ["move", d]
-                         else return "Invalid command"
-command _            = return "Invalid command"
+move :: Direction -> ReaderT Environment IO Environment
+move direction = do current <- asks currentRoom
+                    case lookup direction (exits current) of
+                      Nothing -> do h <- asks (handle . connection)
+                                    liftIO $ hPutStrLn h "You can't move that way."
+                                    ask
+                      Just r  -> do env <- ask
+                                    let newEnv = env { currentRoom = r }
+                                    local (const newEnv) look
+                                    return newEnv
 
-execute :: String -> ReaderT Environment IO String
+look :: ReaderT Environment IO ()
+look = do r <- asks currentRoom
+          h <- asks (handle . connection)
+          (liftIO . hPutStrLn h . (++ "\n") . show) r
+
+
+command :: [String] -> ReaderT Environment IO Environment
+command ("look":_)    = look >> ask
+command ("move":[])   = (asks (handle . connection) >>= liftIO . (flip hPutStrLn "Enter a direction in which to move.")) >> ask
+command ("move":d:_)  = move d
+command (d:_)         = if isDirection d then move d else command []
+command _             = (asks (handle . connection) >>= liftIO . (flip hPutStrLn "Invalid command")) >> ask
+
+execute :: String -> ReaderT Environment IO Environment
 execute = command . words
