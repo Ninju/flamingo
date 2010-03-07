@@ -19,6 +19,7 @@ portNumber = 3333
 hDisplayPrompt :: Handle -> IO ()
 hDisplayPrompt h = hPutStr h prompt >> hFlush h
 
+acceptConnections :: Socket -> IO b
 acceptConnections socket = do connection <- accept socket
                               let env = Env { connection = connection, currentRoom = startingRoom }
                               forkIO $ (runReaderT handleClient env `finally` hClose (handle connection))
