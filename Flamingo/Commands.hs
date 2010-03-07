@@ -24,7 +24,6 @@ look = do r <- asks currentRoom
           h <- asks (handle . connection)
           (liftIO . hPutStrLn h . (++ "\n") . show) r
 
-
 command :: [String] -> ReaderT Environment IO Environment
 command ("look":_)    = look >> ask
 command ("move":[])   = (asks (handle . connection) >>= liftIO . (flip hPutStrLn "Enter a direction in which to move.")) >> ask

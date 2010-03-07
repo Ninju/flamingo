@@ -19,17 +19,19 @@ portNumber = 3333
 hDisplayPrompt :: Handle -> IO ()
 hDisplayPrompt h = hPutStr h prompt >> hFlush h
 
+hGetPlayerName :: Handle -> IO String
+hGetPlayerName h = do hPutStr h "What is your name? " >> hFlush h
+                      n <- hGetLine h
+                      if null (words n)
+                        then hPutStrLn h "Name cannot be blank." >> hGetPlayerName h
+                        else return n
+
 acceptConnections :: Socket -> IO b
 acceptConnections socket = do connection <- accept socket
-                              let env = Env { connection = connection, currentRoom = startingRoom }
+                              room <- atomically $ startingRoom
+                              let env = Env { connection = connection, currentRoom = room }
                               forkIO $ (runReaderT handleClient env `finally` hClose (handle connection))
                               acceptConnections socket
-
-handleClient :: ReaderT Environment IO ()
-handleClient = do h <- asks (handle . connection)
-                  r <- asks currentRoom
-                  (liftIO . hPutStrLn h . (++ "\n") . show) r
-                  handleInput
 
 handleInput :: ReaderT Environment IO ()
 handleInput = do h <- asks (handle . connection)
@@ -37,5 +39,13 @@ handleInput = do h <- asks (handle . connection)
                                       hGetLine h
                  env <- execute input
                  local (const env) handleInput
+
+handleClient :: ReaderT Environment IO ()
+handleClient = do h <- asks (handle . connection)
+                  n <- liftIO $ hGetPlayerName h
+                  r <- asks currentRoom
+                  liftIO $ addInhabitant r n
+                  (liftIO . hPutStrLn h . (++ "\n") . show) r
+                  handleInput
 
 run = bracket (listenOn $ PortNumber portNumber) sClose acceptConnections
