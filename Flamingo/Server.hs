@@ -16,12 +16,6 @@ prompt = "> "
 portNumber :: PortNumber
 portNumber = 3333
 
-startingRoom :: Room
-startingRoom = Room { exits = [("north", crampedCloset)], description = "You find yourself in a round room with a pillar in the middle." }
-
-crampedCloset :: Room
-crampedCloset = Room { exits = [("south",startingRoom)], description = "You are in a cramped closet." }
-
 hDisplayPrompt :: Handle -> IO ()
 hDisplayPrompt h = hPutStr h prompt >> hFlush h
 
