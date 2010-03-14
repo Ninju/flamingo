@@ -2,7 +2,6 @@ module Flamingo.Utils (Environment(Env), currentRoom, connection,
                        Connection,
                        handle, prompt, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
 import Control.Arrow
-import Control.Concurrent.STM
 import Control.Monad.Reader
 import Network (PortNumber)
 import System.IO
