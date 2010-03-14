@@ -1,14 +1,15 @@
-module Flamingo.Utils (Environment(Env), currentRoom, connection,
+module Flamingo.Utils (Environment(Env), currentRoom, connection, rooms,
                        Connection,
                        handle, prompt, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
 import Control.Arrow (Kleisli(Kleisli), runKleisli, (&&&))
+import Control.Concurrent.STM (TVar)
 import Control.Monad.Reader (ReaderT, asks, liftIO)
 import Network (PortNumber)
 import System.IO (Handle, hFlush, hPutStr, hPutStrLn, hGetLine)
 import Flamingo.Rooms (Room(Room))
 
 type Connection = (Handle, String, PortNumber)
-data Environment = Env { connection :: Connection, currentRoom :: Room }
+data Environment = Env { connection :: Connection, currentRoom :: Room, rooms :: [TVar Room] }
 
 handle :: (Handle, a, b) -> Handle
 handle (h,_,_) = h
