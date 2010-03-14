@@ -1,4 +1,4 @@
-module Flamingo.Commands (execute) where
+module Flamingo.Commands (execute, look) where
 import Control.Arrow ((>>>))
 import Control.Monad.Reader (ReaderT, asks, ask, local)
 import Flamingo.Rooms (Direction(North, East, South, West), exits, moveInhabitant, inhabitants)

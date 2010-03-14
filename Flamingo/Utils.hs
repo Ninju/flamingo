@@ -1,6 +1,7 @@
 module Flamingo.Utils (Environment(Env), currentRoom, connection, tvRooms, inhabitant,
                        Connection,
-                       getRoom, asksM, uCurrentRoom, modifyRooms, modifyRoom, handle, prompt, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
+                       modifyCurrentRoom, modifyRooms, modifyRoom, getRoom, asksM, uCurrentRoom,
+                       handle, prompt, mGetName, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
 import Control.Arrow (Kleisli(Kleisli), runKleisli, (&&&))
 import Control.Concurrent.STM (TVar, atomically, writeTVar, readTVar)
 import Control.Monad.Reader (ReaderT, asks, liftIO, ask, lift)
@@ -45,9 +46,19 @@ mDisplayPrompt = mIO hDisplayPrompt
 mGetLine :: ReaderT Environment IO String
 mGetLine = mIO hGetLine
 
+mGetName :: ReaderT Environment IO String
+mGetName = do (_, name) <- mIO (flip hPutStrLn "What is your name?" <&> hDisplayPrompt <&> hGetLine)
+              case words name of
+                []  -> mPutStrLn "Name must not be blank." >> mGetName
+                [n] -> return n
+                _   -> mPutStrLn "Name must not contain spaces." >> mGetName
+
 modifyRooms :: ([Room] -> [Room]) -> ReaderT Environment IO ()
 modifyRooms f = do tvRs <- asks tvRooms
                    (liftIO . atomically) (readTVar tvRs >>= writeTVar tvRs . f)
 
 modifyRoom :: (Room -> Room) -> Room -> ReaderT Environment IO ()
 modifyRoom f r = modifyRooms (updateRoom f r)
+
+modifyCurrentRoom :: (Room -> Room) -> ReaderT Environment IO ()
+modifyCurrentRoom f = asksM uCurrentRoom >>= modifyRoom f
