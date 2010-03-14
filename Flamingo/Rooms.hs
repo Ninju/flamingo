@@ -1,4 +1,5 @@
 module Flamingo.Rooms (Room(Room), exits, description,
+                       RoomID(RoomID),
                        Direction(North, East, South, West),
                        startingRoom, crampedCloset) where
 import Data.Char (toLower)

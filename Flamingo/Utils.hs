@@ -6,10 +6,10 @@ import Control.Concurrent.STM (TVar)
 import Control.Monad.Reader (ReaderT, asks, liftIO)
 import Network (PortNumber)
 import System.IO (Handle, hFlush, hPutStr, hPutStrLn, hGetLine)
-import Flamingo.Rooms (Room(Room))
+import Flamingo.Rooms (Room(Room), RoomID(RoomID))
 
 type Connection = (Handle, String, PortNumber)
-data Environment = Env { connection :: Connection, currentRoom :: Room, rooms :: [TVar Room] }
+data Environment = Env { connection :: Connection, currentRoom :: Room, rooms :: [(RoomID, TVar Room)] }
 
 handle :: (Handle, a, b) -> Handle
 handle (h,_,_) = h
