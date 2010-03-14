@@ -2,17 +2,19 @@ module Flamingo.Server (run) where
 import Network (PortNumber, PortID(PortNumber), accept, listenOn, sClose)
 import System.IO (hClose, hGetLine)
 import Control.Concurrent (forkIO)
+import Control.Concurrent.STM (newTVar, atomically)
 import Control.Monad.Reader (ReaderT, runReaderT, asks, local)
 import Control.Exception (bracket, finally)
 import Flamingo.Commands (execute)
-import Flamingo.Utils (Environment(Env), rooms, currentRoom, connection, handle, mPutStrLn, hDisplayPrompt, mIO, (<&>))
-import Flamingo.Rooms (startingRoom)
+import Flamingo.Utils (Environment(Env), inhabitant, tvRooms, currentRoom, connection, handle, mPutStrLn, hDisplayPrompt, mIO, (<&>))
+import Flamingo.Rooms (startingRoom, crampedCloset, Inhabitant(Name))
 
 portNumber :: PortNumber
 portNumber = 3333
 
 acceptConnections socket = do connection <- accept socket
-                              let env = Env { connection = connection, currentRoom = startingRoom, rooms = [] }
+                              tvRs       <- atomically $ newTVar [startingRoom, crampedCloset]
+                              let env = Env { connection = connection, currentRoom = startingRoom, tvRooms = tvRs, inhabitant = Name "" }
                               forkIO $ (runReaderT handleClient env `finally` hClose (handle connection))
                               acceptConnections socket
 

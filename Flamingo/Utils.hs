@@ -1,15 +1,15 @@
-module Flamingo.Utils (Environment(Env), currentRoom, connection, rooms,
+module Flamingo.Utils (Environment(Env), currentRoom, connection, tvRooms, inhabitant,
                        Connection,
-                       handle, prompt, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
+                       modifyRooms, replaceFirstWhere, handle, prompt, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
 import Control.Arrow (Kleisli(Kleisli), runKleisli, (&&&))
-import Control.Concurrent.STM (TVar)
-import Control.Monad.Reader (ReaderT, asks, liftIO)
+import Control.Concurrent.STM (TVar, atomically, writeTVar, readTVar)
+import Control.Monad.Reader (ReaderT, asks, liftIO, ask, lift)
 import Network (PortNumber)
 import System.IO (Handle, hFlush, hPutStr, hPutStrLn, hGetLine)
-import Flamingo.Rooms (Room(Room), RoomID(RoomID))
+import {-# SOURCE #-} Flamingo.Rooms (Room(Room), RoomID(RoomID), Inhabitant)
 
 type Connection = (Handle, String, PortNumber)
-data Environment = Env { connection :: Connection, currentRoom :: Room, rooms :: [(RoomID, TVar Room)] }
+data Environment = Env { connection :: Connection, currentRoom :: Room, tvRooms :: TVar [Room], inhabitant :: Inhabitant }
 
 handle :: (Handle, a, b) -> Handle
 handle (h,_,_) = h
@@ -19,6 +19,13 @@ prompt = "> "
 
 hDisplayPrompt :: Handle -> IO ()
 hDisplayPrompt h = hPutStr h prompt >> hFlush h
+
+uCurrentRoom :: Environment -> IO Room
+uCurrentRoom env = do rs       <- atomically $ readTVar $ tvRooms env
+                      let currentR = currentRoom env
+                      return $ head (dropWhile (not . (== currentR)) rs)
+
+asksM f = ask >>= lift . f
 
 (<&>) :: Monad m => (a -> m b) -> (a -> m c) -> (a -> m (b,c))
 (<&>) f g = runKleisli $ Kleisli f &&& Kleisli g
@@ -34,3 +41,13 @@ mDisplayPrompt = mIO hDisplayPrompt
 
 mGetLine :: ReaderT Environment IO String
 mGetLine = mIO hGetLine
+
+modifyRooms :: ([Room] -> [Room]) -> ReaderT Environment IO ()
+modifyRooms f = do tvRs <- asks tvRooms
+                   rs   <- liftIO $ atomically $ readTVar tvRs
+                   liftIO $ atomically $ writeTVar tvRs (f rs)
+
+
+replaceFirstWhere :: (a -> Bool) -> a -> [a] -> [a]
+replaceFirstWhere p y []     = []
+replaceFirstWhere p y (x:xs) = if p x then y : xs else x : replaceFirstWhere p y xs

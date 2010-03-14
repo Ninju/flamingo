@@ -1,19 +1,22 @@
 module Flamingo.Commands (execute) where
+import Control.Arrow ((>>>))
 import Control.Monad.Reader (ReaderT, asks, ask, local)
-import Flamingo.Rooms (Direction(North, East, South, West), exits)
-import Flamingo.Utils (Environment, mPutStrLn, currentRoom)
+import Flamingo.Rooms (Direction(North, East, South, West), exits, moveInhabitant)
+import Flamingo.Utils (Environment, mPutStrLn, currentRoom, modifyRooms, inhabitant)
 
 toDirection :: String -> Maybe Direction
 toDirection d = lookup d $ zip ["north", "east", "south", "west"] [North .. West]
 
-move :: Direction -> ReaderT Environment IO Environment
-move direction = do current <- asks currentRoom
-                    case lookup direction (exits current) of
+--move direction :: Direction -> ReaderT Environment IO Environment
+move direction = do currentR <- asks currentRoom
+                    case lookup direction (exits currentR) of
                       Nothing -> mPutStrLn "You can't move that way." >> ask
-                      Just r  -> do env <- ask
-                                    let newEnv = env { currentRoom = r }
-                                    local (const newEnv) look
-                                    return newEnv
+                      Just eR -> do i <- asks inhabitant
+                                    modifyRooms (moveInhabitant i currentR eR)
+                                    env <- ask
+                                    let env' = env { currentRoom = eR }
+                                    local (const env') look
+                                    return env'
 
 look :: ReaderT Environment IO ()
 look = asks currentRoom >>= mPutStrLn . (++ "\n") . show
