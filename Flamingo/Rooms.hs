@@ -19,8 +19,7 @@ instance Show Room where
   show r = description r ++ "\nExits: (" ++ intercalate ", " (map fst $ exits r) ++ ")"
 
 mIO :: (Handle -> IO a) -> ReaderT Environment IO a
-mIO f = do h <- asks (handle . connection)
-           liftIO (f h)
+mIO f = asks (handle . connection) >>= liftIO . f
 
 mPutStrLn :: String -> ReaderT Environment IO ()
 mPutStrLn = mIO . flip hPutStrLn
@@ -30,4 +29,3 @@ mDisplayPrompt = mIO hDisplayPrompt
 
 mGetLine :: ReaderT Environment IO String
 mGetLine = mIO hGetLine
-
