@@ -12,11 +12,13 @@ import Flamingo.Rooms (startingRoom, crampedCloset, Inhabitant(Name))
 portNumber :: PortNumber
 portNumber = 3333
 
-acceptConnections socket = do connection <- accept socket
-                              tvRs       <- atomically $ newTVar [startingRoom, crampedCloset]
-                              let env = Env { connection = connection, currentRoom = startingRoom, tvRooms = tvRs, inhabitant = Name "" }
-                              forkIO $ (runReaderT handleClient env `finally` hClose (handle connection))
-                              acceptConnections socket
+setupAndAcceptConnections socket = do tvRs <- atomically $ newTVar [startingRoom, crampedCloset]
+                                      acceptConnections socket tvRs
+
+acceptConnections socket tvRs = do connection <- accept socket
+                                   let env = Env { connection = connection, currentRoom = startingRoom, tvRooms = tvRs, inhabitant = Name "" }
+                                   forkIO $ (runReaderT handleClient env `finally` hClose (handle connection))
+                                   acceptConnections socket tvRs
 
 handleClient :: ReaderT Environment IO ()
 handleClient = do r <- asks currentRoom
@@ -28,4 +30,4 @@ handleInput = do (_, input) <- mIO (hDisplayPrompt <&> hGetLine)
                  env <- execute input
                  local (const env) handleInput
 
-run = bracket (listenOn $ PortNumber portNumber) sClose acceptConnections
+run = bracket (listenOn $ PortNumber portNumber) sClose setupAndAcceptConnections

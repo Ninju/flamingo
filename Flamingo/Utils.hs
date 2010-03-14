@@ -4,6 +4,7 @@ module Flamingo.Utils (Environment(Env), currentRoom, connection, tvRooms, inhab
 import Control.Arrow (Kleisli(Kleisli), runKleisli, (&&&))
 import Control.Concurrent.STM (TVar, atomically, writeTVar, readTVar)
 import Control.Monad.Reader (ReaderT, asks, liftIO, ask, lift)
+import Data.List (delete)
 import Network (PortNumber)
 import System.IO (Handle, hFlush, hPutStr, hPutStrLn, hGetLine)
 import {-# SOURCE #-} Flamingo.Rooms (Room(Room), RoomID(RoomID), Inhabitant)
@@ -47,6 +48,12 @@ modifyRooms f = do tvRs <- asks tvRooms
                    rs   <- liftIO $ atomically $ readTVar tvRs
                    liftIO $ atomically $ writeTVar tvRs (f rs)
 
+--modifyRoom f r :: (Room -> Room) -> Room -> ReaderT Environment IO ()
+modifyRoom f r = do tvRs <- asks tvRooms
+                    rs   <- liftIO $ atomically $ readTVar tvRs
+                    liftIO $ atomically $ writeTVar tvRs (f' rs)
+                 where
+                 f' rs' = (f r) : (delete r rs')
 
 replaceFirstWhere :: (a -> Bool) -> a -> [a] -> [a]
 replaceFirstWhere p y []     = []
