@@ -1,6 +1,6 @@
 module Flamingo.Utils (Environment(Env), currentRoom, connection, tvRooms, inhabitant,
                        Connection,
-                       asksM, uCurrentRoom, modifyRooms, replaceFirstWhere, handle, prompt, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
+                       asksM, uCurrentRoom, modifyRooms, modifyRoom, replaceFirstWhere, handle, prompt, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
 import Control.Arrow (Kleisli(Kleisli), runKleisli, (&&&))
 import Control.Concurrent.STM (TVar, atomically, writeTVar, readTVar)
 import Control.Monad.Reader (ReaderT, asks, liftIO, ask, lift)

@@ -2,7 +2,7 @@ module Flamingo.Rooms (Room(Room), exits, description, roomID, inhabitants,
                        RoomID(RoomID),
                        Direction(North, East, South, West),
                        Inhabitant(Name),
-                       startingRoom, crampedCloset, moveInhabitant) where
+                       startingRoom, crampedCloset, moveInhabitant, addInhabitant) where
 import Data.Char (toLower)
 import Data.List (intercalate, delete)
 import Flamingo.Utils (replaceFirstWhere)

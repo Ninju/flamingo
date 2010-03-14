@@ -6,8 +6,8 @@ import Control.Concurrent.STM (newTVar, atomically)
 import Control.Monad.Reader (ReaderT, runReaderT, asks, local)
 import Control.Exception (bracket, finally)
 import Flamingo.Commands (execute)
-import Flamingo.Utils (Environment(Env), inhabitant, tvRooms, currentRoom, connection, handle, mPutStrLn, hDisplayPrompt, mIO, (<&>))
-import Flamingo.Rooms (startingRoom, crampedCloset, Inhabitant(Name))
+import Flamingo.Utils (Environment(Env), inhabitant, tvRooms, currentRoom, connection, handle, mPutStrLn, hDisplayPrompt, mIO, (<&>), modifyRoom)
+import Flamingo.Rooms (startingRoom, crampedCloset, Inhabitant(Name), addInhabitant)
 
 portNumber :: PortNumber
 portNumber = 3333
@@ -22,6 +22,8 @@ acceptConnections socket tvRs = do connection <- accept socket
 
 handleClient :: ReaderT Environment IO ()
 handleClient = do r <- asks currentRoom
+                  i <- asks inhabitant
+                  modifyRoom (addInhabitant i) r
                   mPutStrLn (show r ++ "\n")
                   handleInput
 
