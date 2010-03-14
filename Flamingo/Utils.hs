@@ -8,4 +8,3 @@ type Connection = (Handle, String, PortNumber)
 
 handle :: (Handle, a, b) -> Handle
 handle (h,_,_) = h
-

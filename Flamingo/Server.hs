@@ -1,6 +1,7 @@
 module Flamingo.Server where
 import Network
 import System.IO
+import Control.Arrow
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
@@ -16,6 +17,22 @@ prompt = "> "
 portNumber :: PortNumber
 portNumber = 3333
 
+(<&>) :: Monad m => (a -> m b) -> (a -> m c) -> (a -> m (b,c))
+(<&>) f g = runKleisli $ Kleisli f &&& Kleisli g
+
+mIO :: (Handle -> IO a) -> ReaderT Environment IO a
+mIO f = do h <- asks (handle . connection)
+           liftIO (f h)
+
+mPutStrLn :: String -> ReaderT Environment IO ()
+mPutStrLn = mIO . flip hPutStrLn
+
+mDisplayPrompt :: ReaderT Environment IO ()
+mDisplayPrompt = mIO hDisplayPrompt
+
+mGetLine :: ReaderT Environment IO String
+mGetLine = mIO hGetLine
+
 hDisplayPrompt :: Handle -> IO ()
 hDisplayPrompt h = hPutStr h prompt >> hFlush h
 
@@ -25,15 +42,12 @@ acceptConnections socket = do connection <- accept socket
                               acceptConnections socket
 
 handleClient :: ReaderT Environment IO ()
-handleClient = do h <- asks (handle . connection)
-                  r <- asks currentRoom
-                  (liftIO . hPutStrLn h . (++ "\n") . show) r
+handleClient = do r <- asks currentRoom
+                  mPutStrLn (show r ++ "\n")
                   handleInput
 
 handleInput :: ReaderT Environment IO ()
-handleInput = do h <- asks (handle . connection)
-                 input <- liftIO $ do hDisplayPrompt h
-                                      hGetLine h
+handleInput = do (_, input) <- mIO (hDisplayPrompt <&> hGetLine)
                  env <- execute input
                  local (const env) handleInput
 
