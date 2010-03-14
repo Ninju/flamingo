@@ -22,16 +22,10 @@ move direction = do currentR <- asksM currentRoom
 look :: ReaderT Environment IO ()
 look = asksM currentRoom >>= mPutStrLn . (++ "\n") . show
 
-peeps :: ReaderT Environment IO ()
-peeps = do currentR <- asksM currentRoom
-           mPutStrLn $ show (inhabitants currentR)
-
-
 command :: [String] -> ReaderT Environment IO Environment
 command ("look":_)    = look >> ask
 command ("move":[])   = mPutStrLn "Enter a direction in which to move." >> ask
 command ("move":d:_)  = maybe (mPutStrLn "You can't move that way." >> ask) move (toDirection d)
-command ("peeps":_)   = peeps >> ask
 command (d:_)         = maybe (command []) move (toDirection d)
 command _             = mPutStrLn "Invalid command" >> ask
 
