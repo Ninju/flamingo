@@ -5,7 +5,6 @@ import Control.Concurrent.STM
 import Control.Monad.Reader
 import Data.Char (toLower)
 import Data.List (intercalate)
-import System.IO
 import Flamingo.Utils
 
 data Direction = North | East | South | West deriving (Eq, Show, Enum)
