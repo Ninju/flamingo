@@ -22,6 +22,17 @@ prompt = "> "
 hDisplayPrompt :: Handle -> IO ()
 hDisplayPrompt h = hPutStr h prompt >> hFlush h
 
+hGetName :: Handle -> IO String
+hGetName h = do hPutStrLn h "What is your name?"
+                hDisplayPrompt h
+                name <- hGetLine h
+                case words name of
+                  []  -> hPutStrLn h "Name must not be blank." >> hGetName h
+                  [n] -> return n
+                  _   -> hPutStrLn h "Name must not contain spaces." >> hGetName h
+
+
+
 uCurrentRoom :: Environment -> IO Room
 uCurrentRoom env = getRoom (currentRoom env) env
 
@@ -47,11 +58,7 @@ mGetLine :: ReaderT Environment IO String
 mGetLine = mIO hGetLine
 
 mGetName :: ReaderT Environment IO String
-mGetName = do (_, name) <- mIO (flip hPutStrLn "What is your name?" <&> hDisplayPrompt <&> hGetLine)
-              case words name of
-                []  -> mPutStrLn "Name must not be blank." >> mGetName
-                [n] -> return n
-                _   -> mPutStrLn "Name must not contain spaces." >> mGetName
+mGetName = mIO hGetName
 
 modifyRooms :: ([Room] -> [Room]) -> ReaderT Environment IO ()
 modifyRooms f = do tvRs <- asks tvRooms
