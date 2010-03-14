@@ -33,15 +33,16 @@ hGetName h = do hPutStrLn h "What is your name?"
                   _   -> hPutStrLn h "Name must not contain spaces." >> hGetName h
 
 currentRoom :: Environment -> IO Room
-currentRoom env = findRoom ((currentRoomID env ==) . roomID) env
+currentRoom env = getRoom (currentRoomID env) env
 
 findRoom :: (Room -> Bool) -> Environment -> IO Room
 findRoom f env = do rs <- atomically $ readTVar $ tvRooms env
                     return $ fromJust (find f rs)
 
-getRoom :: Room -> Environment -> IO Room
-getRoom r env = findRoom (== r) env
+getRoom :: RoomID -> Environment -> IO Room
+getRoom rID env = findRoom ((== rID) . roomID) env
 
+asksM :: Monad m => (Environment -> m a) -> ReaderT Environment m a
 asksM f = ask >>= lift . f
 
 (<&>) :: Monad m => (a -> m b) -> (a -> m c) -> (a -> m (b,c))

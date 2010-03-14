@@ -12,7 +12,7 @@ move direction = do currentR <- asksM currentRoom
                     case lookup direction (exits currentR) of
                       Nothing -> mPutStrLn "You can't move that way." >> ask
                       Just eR -> do i <- asks inhabitant
-                                    r <- asksM (getRoom eR)
+                                    r <- (asksM . getRoom . roomID) eR
                                     modifyRooms (moveInhabitant i currentR r)
                                     env <- ask
                                     let env' = env { currentRoomID = roomID r }
