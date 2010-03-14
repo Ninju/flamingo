@@ -1,7 +1,6 @@
 module Flamingo.Rooms (Room(Room), exits, description,
                        Direction(North, East, South, West),
                        startingRoom, crampedCloset) where
-import Control.Concurrent.STM
 import Data.Char (toLower)
 import Data.List (intercalate)
 import Flamingo.Utils
