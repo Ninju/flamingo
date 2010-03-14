@@ -3,7 +3,7 @@ import Network (PortNumber, PortID(PortNumber), accept, listenOn, sClose)
 import System.IO (hClose, hGetLine)
 import Control.Concurrent (forkIO)
 import Control.Monad.Reader (ReaderT, runReaderT, asks, local)
-import Control.Exception hiding (handle)
+import Control.Exception (bracket, finally)
 import Flamingo.Commands (execute)
 import Flamingo.Utils
 import Flamingo.Rooms
