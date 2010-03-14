@@ -25,10 +25,10 @@ look = do r <- asks currentRoom
 
 command :: [String] -> ReaderT Environment IO Environment
 command ("look":_)    = look >> ask
-command ("move":[])   = (asks (handle . connection) >>= liftIO . (flip hPutStrLn "Enter a direction in which to move.")) >> ask
+command ("move":[])   = mPutStrLn "Enter a direction in which to move." >> ask
 command ("move":d:_)  = move d
 command (d:_)         = if isDirection d then move d else command []
-command _             = (asks (handle . connection) >>= liftIO . (flip hPutStrLn "Invalid command")) >> ask
+command _             = mPutStrLn "Invalid command" >> ask
 
 execute :: String -> ReaderT Environment IO Environment
 execute = command . words
