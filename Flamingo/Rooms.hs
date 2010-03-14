@@ -5,7 +5,6 @@ module Flamingo.Rooms (Room(Room), exits, description, roomID, inhabitants,
                        startingRoom, crampedCloset, moveInhabitant, addInhabitant) where
 import Data.Char (toLower)
 import Data.List (intercalate, delete)
-import Flamingo.Utils (replaceFirstWhere)
 
 data Direction     = North | East | South | West deriving (Eq, Show, Enum)
 newtype Inhabitant = Name String deriving (Eq, Show)
@@ -29,7 +28,6 @@ crampedCloset = Room { roomID      = RoomID "closet",
 
 instance Show Room where
   show r = description r ++ "\nExits: (" ++ intercalate ", " (map (map toLower . show . fst) $ exits r) ++ ")"
-
 
 moveInhabitant :: Inhabitant -> Room -> Room -> [Room] -> [Room]
 moveInhabitant i from target = updateRoom (removeInhabitant i) from . updateRoom (addInhabitant i) target

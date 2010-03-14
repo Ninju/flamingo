@@ -1,6 +1,6 @@
 module Flamingo.Utils (Environment(Env), currentRoom, connection, tvRooms, inhabitant,
                        Connection,
-                       getRoom, asksM, uCurrentRoom, modifyRooms, modifyRoom, replaceFirstWhere, handle, prompt, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
+                       getRoom, asksM, uCurrentRoom, modifyRooms, modifyRoom, handle, prompt, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
 import Control.Arrow (Kleisli(Kleisli), runKleisli, (&&&))
 import Control.Concurrent.STM (TVar, atomically, writeTVar, readTVar)
 import Control.Monad.Reader (ReaderT, asks, liftIO, ask, lift)
@@ -51,7 +51,3 @@ modifyRooms f = do tvRs <- asks tvRooms
 
 modifyRoom :: (Room -> Room) -> Room -> ReaderT Environment IO ()
 modifyRoom f r = modifyRooms $ ((f r):) . (delete r)
-
-replaceFirstWhere :: (a -> Bool) -> a -> [a] -> [a]
-replaceFirstWhere p y []     = []
-replaceFirstWhere p y (x:xs) = if p x then y : xs else x : replaceFirstWhere p y xs
