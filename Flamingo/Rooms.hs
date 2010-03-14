@@ -8,7 +8,7 @@ import Data.List (intercalate, delete)
 import Flamingo.Utils (replaceFirstWhere)
 
 data Direction     = North | East | South | West deriving (Eq, Show, Enum)
-newtype Inhabitant = Name String deriving Eq
+newtype Inhabitant = Name String deriving (Eq, Show)
 newtype RoomID     = RoomID String deriving Eq
 data Room          = Room { exits :: [(Direction, Room)], description :: String, inhabitants :: [Inhabitant], roomID :: RoomID }
 
