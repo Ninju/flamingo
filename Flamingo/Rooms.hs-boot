@@ -1,3 +1,3 @@
 module Flamingo.Rooms where
-  type Direction = String
+  data Direction = North | East | South | West
   data Room = Room { exits :: [(Direction, Room)], description :: String }

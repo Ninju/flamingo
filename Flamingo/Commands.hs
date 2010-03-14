@@ -5,14 +5,13 @@ import System.IO
 import Flamingo.Rooms
 import Flamingo.Utils
 
-isDirection :: Direction -> Bool
-isDirection = flip elem ["north", "east", "south", "west"]
+toDirection :: String -> Maybe Direction
+toDirection d = lookup d $ zip ["north", "east", "south", "west"] [North .. West]
 
 move :: Direction -> ReaderT Environment IO Environment
 move direction = do current <- asks currentRoom
                     case lookup direction (exits current) of
-                      Nothing -> do mPutStrLn "You can't move that way."
-                                    ask
+                      Nothing -> mPutStrLn "You can't move that way." >> ask
                       Just r  -> do env <- ask
                                     let newEnv = env { currentRoom = r }
                                     local (const newEnv) look
@@ -22,12 +21,11 @@ look :: ReaderT Environment IO ()
 look = do r <- asks currentRoom
           mPutStrLn (show r ++ "\n")
 
-
 command :: [String] -> ReaderT Environment IO Environment
 command ("look":_)    = look >> ask
 command ("move":[])   = mPutStrLn "Enter a direction in which to move." >> ask
-command ("move":d:_)  = move d
-command (d:_)         = if isDirection d then move d else command []
+command ("move":d:_)  = maybe (mPutStrLn "You can't move that way." >> ask) move (toDirection d)
+command (d:_)         = maybe (command []) move (toDirection d)
 command _             = mPutStrLn "Invalid command" >> ask
 
 execute :: String -> ReaderT Environment IO Environment
