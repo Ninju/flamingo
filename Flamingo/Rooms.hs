@@ -1,11 +1,12 @@
-module Flamingo.Rooms where
+module Flamingo.Rooms (Room(Room), exits, description,
+                       Direction,
+                       startingRoom, crampedCloset) where
 import Control.Concurrent.STM
 import Control.Monad.Reader
 import Data.List
 import System.IO
 import Flamingo.Utils
 
-data Environment = Env { connection :: Connection, currentRoom :: Room }
 type Direction = String
 data Room = Room { exits :: [(Direction, Room)], description :: String }
 
@@ -17,15 +18,3 @@ crampedCloset = Room { exits = [("south",startingRoom)], description = "You are 
 
 instance Show Room where
   show r = description r ++ "\nExits: (" ++ intercalate ", " (map fst $ exits r) ++ ")"
-
-mIO :: (Handle -> IO a) -> ReaderT Environment IO a
-mIO f = asks (handle . connection) >>= liftIO . f
-
-mPutStrLn :: String -> ReaderT Environment IO ()
-mPutStrLn = mIO . flip hPutStrLn
-
-mDisplayPrompt :: ReaderT Environment IO ()
-mDisplayPrompt = mIO hDisplayPrompt
-
-mGetLine :: ReaderT Environment IO String
-mGetLine = mIO hGetLine
