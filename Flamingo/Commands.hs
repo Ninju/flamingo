@@ -7,7 +7,7 @@ import Flamingo.Utils (Environment, mPutStrLn, currentRoom, modifyRooms, inhabit
 toDirection :: String -> Maybe Direction
 toDirection d = lookup d $ zip ["north", "east", "south", "west"] [North .. West]
 
---move direction :: Direction -> ReaderT Environment IO Environment
+move :: Direction -> ReaderT Environment IO Environment
 move direction = do currentR <- asksM currentRoom
                     case lookup direction (exits currentR) of
                       Nothing -> mPutStrLn "You can't move that way." >> ask
