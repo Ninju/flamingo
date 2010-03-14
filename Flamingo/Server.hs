@@ -1,7 +1,7 @@
 module Flamingo.Server (run) where
 import Network (PortNumber, PortID(PortNumber), accept, listenOn, sClose)
 import System.IO (hClose, hGetLine)
-import Control.Concurrent
+import Control.Concurrent (forkIO)
 import Control.Concurrent.STM
 import Control.Monad
 import Control.Monad.Reader
