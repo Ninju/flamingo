@@ -1,5 +1,4 @@
 module Flamingo.Commands where
-import Control.Concurrent.STM
 import Control.Monad.Reader
 import System.IO
 import Flamingo.Rooms
