@@ -48,12 +48,8 @@ modifyRooms f = do tvRs <- asks tvRooms
                    rs   <- liftIO $ atomically $ readTVar tvRs
                    liftIO $ atomically $ writeTVar tvRs (f rs)
 
---modifyRoom f r :: (Room -> Room) -> Room -> ReaderT Environment IO ()
-modifyRoom f r = do tvRs <- asks tvRooms
-                    rs   <- liftIO $ atomically $ readTVar tvRs
-                    liftIO $ atomically $ writeTVar tvRs (f' rs)
-                 where
-                 f' rs' = (f r) : (delete r rs')
+modifyRoom :: (Room -> Room) -> Room -> ReaderT Environment IO ()
+modifyRoom f r = modifyRooms $ ((f r):) . (delete r)
 
 replaceFirstWhere :: (a -> Bool) -> a -> [a] -> [a]
 replaceFirstWhere p y []     = []
