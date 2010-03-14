@@ -16,8 +16,7 @@ move direction = do current <- asks currentRoom
                                     return newEnv
 
 look :: ReaderT Environment IO ()
-look = do r <- asks currentRoom
-          mPutStrLn (show r ++ "\n")
+look = asks currentRoom >>= mPutStrLn . (++ "\n") . show
 
 command :: [String] -> ReaderT Environment IO Environment
 command ("look":_)    = look >> ask
