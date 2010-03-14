@@ -5,7 +5,7 @@ import Control.Concurrent (forkIO)
 import Control.Monad.Reader (ReaderT, runReaderT, asks, local)
 import Control.Exception (bracket, finally)
 import Flamingo.Commands (execute)
-import Flamingo.Utils
+import Flamingo.Utils (Environment(Env), handle, mPutStrLn, hDisplayPrompt, currentRoom, connection, mIO, (<&>))
 import Flamingo.Rooms
 
 portNumber :: PortNumber
