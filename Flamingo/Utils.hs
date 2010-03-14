@@ -4,7 +4,7 @@ module Flamingo.Utils (Environment(Env), currentRoom, connection,
 import Control.Arrow
 import Control.Concurrent.STM
 import Control.Monad.Reader
-import Network
+import Network (PortNumber)
 import System.IO
 import Flamingo.Rooms (Room(Room))
 
