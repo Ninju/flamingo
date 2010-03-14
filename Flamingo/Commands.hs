@@ -1,5 +1,5 @@
 module Flamingo.Commands where
-import Control.Monad.Reader
+import Control.Monad.Reader (ReaderT, asks, ask, local)
 import System.IO
 import Flamingo.Rooms
 import Flamingo.Utils
