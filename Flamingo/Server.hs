@@ -1,12 +1,12 @@
 module Flamingo.Server (run) where
 import Network (PortNumber, PortID(PortNumber), accept, listenOn, sClose)
-import System.IO (hClose, hGetLine)
+import System.IO (hClose, hGetLine, hPutStrLn)
 import Control.Concurrent (forkIO)
 import Control.Concurrent.STM (newTVar, atomically)
-import Control.Monad.Reader (ReaderT, runReaderT, asks, local)
+import Control.Monad.Reader (ReaderT, runReaderT, asks, local, ask)
 import Control.Exception (bracket, finally)
 import Flamingo.Commands (execute)
-import Flamingo.Utils (Environment(Env), inhabitant, tvRooms, currentRoom, connection, handle, mPutStrLn, hDisplayPrompt, mIO, (<&>), modifyRoom)
+import Flamingo.Utils (Environment(Env), inhabitant, tvRooms, currentRoom, connection, handle, mPutStrLn, hDisplayPrompt, mIO, (<&>), modifyRoom, asksM, uCurrentRoom)
 import Flamingo.Rooms (startingRoom, crampedCloset, Inhabitant(Name), addInhabitant)
 
 portNumber :: PortNumber
@@ -21,11 +21,14 @@ acceptConnections socket tvRs = do connection <- accept socket
                                    acceptConnections socket tvRs
 
 handleClient :: ReaderT Environment IO ()
-handleClient = do r <- asks currentRoom
-                  i <- asks inhabitant
-                  modifyRoom (addInhabitant i) r
-                  mPutStrLn (show r ++ "\n")
-                  handleInput
+handleClient = do (_,name) <- mIO (flip hPutStrLn "What is your name?" <&> hDisplayPrompt <&> hGetLine)
+                  e            <- ask
+                  let env = e { inhabitant = Name name }
+                  r <- asksM uCurrentRoom
+                  modifyRoom (addInhabitant (Name name)) r
+                  r' <- asksM uCurrentRoom
+                  mPutStrLn (show r' ++ "\n")
+                  local (const env) handleInput
 
 handleInput :: ReaderT Environment IO ()
 handleInput = do (_, input) <- mIO (hDisplayPrompt <&> hGetLine)

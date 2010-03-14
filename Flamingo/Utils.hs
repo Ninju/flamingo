@@ -1,6 +1,6 @@
 module Flamingo.Utils (Environment(Env), currentRoom, connection, tvRooms, inhabitant,
                        Connection,
-                       asksM, uCurrentRoom, modifyRooms, modifyRoom, replaceFirstWhere, handle, prompt, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
+                       getRoom, asksM, uCurrentRoom, modifyRooms, modifyRoom, replaceFirstWhere, handle, prompt, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
 import Control.Arrow (Kleisli(Kleisli), runKleisli, (&&&))
 import Control.Concurrent.STM (TVar, atomically, writeTVar, readTVar)
 import Control.Monad.Reader (ReaderT, asks, liftIO, ask, lift)
@@ -22,9 +22,11 @@ hDisplayPrompt :: Handle -> IO ()
 hDisplayPrompt h = hPutStr h prompt >> hFlush h
 
 uCurrentRoom :: Environment -> IO Room
-uCurrentRoom env = do rs       <- atomically $ readTVar $ tvRooms env
-                      let currentR = currentRoom env
-                      return $ head (dropWhile (not . (== currentR)) rs)
+uCurrentRoom env = getRoom (currentRoom env) env
+
+getRoom :: Room -> Environment -> IO Room
+getRoom r env = do rs <- atomically $ readTVar $ tvRooms env
+                   return $ head (dropWhile (not . (== r)) rs)
 
 asksM f = ask >>= lift . f
 
