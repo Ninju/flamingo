@@ -11,8 +11,7 @@ isDirection = flip elem ["north", "east", "south", "west"]
 move :: Direction -> ReaderT Environment IO Environment
 move direction = do current <- asks currentRoom
                     case lookup direction (exits current) of
-                      Nothing -> do h <- asks (handle . connection)
-                                    liftIO $ hPutStrLn h "You can't move that way."
+                      Nothing -> do mPutStrLn "You can't move that way."
                                     ask
                       Just r  -> do env <- ask
                                     let newEnv = env { currentRoom = r }
@@ -21,8 +20,7 @@ move direction = do current <- asks currentRoom
 
 look :: ReaderT Environment IO ()
 look = do r <- asks currentRoom
-          h <- asks (handle . connection)
-          (liftIO . hPutStrLn h . (++ "\n") . show) r
+          mPutStrLn (show r ++ "\n")
 
 
 command :: [String] -> ReaderT Environment IO Environment
