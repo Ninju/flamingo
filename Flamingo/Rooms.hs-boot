@@ -1,4 +1,4 @@
-module Flamingo.Rooms where
+module Flamingo.Rooms (updateRoom) where
   data Direction = North | East | South | West
   newtype Inhabitant = Name String
   newtype RoomID = RoomID String

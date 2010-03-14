@@ -7,7 +7,7 @@ import Control.Monad.Reader (ReaderT, asks, liftIO, ask, lift)
 import Data.List (delete)
 import Network (PortNumber)
 import System.IO (Handle, hFlush, hPutStr, hPutStrLn, hGetLine)
-import {-# SOURCE #-} Flamingo.Rooms (Room(Room), RoomID(RoomID), Inhabitant)
+import Flamingo.Rooms (Room(Room), RoomID(RoomID), Inhabitant, updateRoom)
 
 type Connection = (Handle, String, PortNumber)
 data Environment = Env { connection :: Connection, currentRoom :: Room, tvRooms :: TVar [Room], inhabitant :: Inhabitant }
@@ -50,4 +50,4 @@ modifyRooms f = do tvRs <- asks tvRooms
                    (liftIO . atomically) (readTVar tvRs >>= writeTVar tvRs . f)
 
 modifyRoom :: (Room -> Room) -> Room -> ReaderT Environment IO ()
-modifyRoom f r = modifyRooms $ ((f r):) . (delete r)
+modifyRoom f r = modifyRooms (updateRoom f r)
