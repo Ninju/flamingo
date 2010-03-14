@@ -1,4 +1,4 @@
-module Flamingo.Server where
+module Flamingo.Server (run) where
 import Network
 import System.IO
 import Control.Concurrent
