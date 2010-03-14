@@ -32,10 +32,10 @@ instance Show Room where
 
 
 moveInhabitant :: Inhabitant -> Room -> Room -> [Room] -> [Room]
-moveInhabitant i from target rooms = (replaceFirstWhere (== from) newFrom . replaceFirstWhere (== target) newTarget) rooms
-                                     where
-                                     newFrom   = removeInhabitant i from
-                                     newTarget = addInhabitant i target
+moveInhabitant i from target = updateRoom (removeInhabitant i) from . updateRoom (addInhabitant i) target
+
+updateRoom :: (Room -> Room) -> Room -> [Room] -> [Room]
+updateRoom f r = (f r:) . delete r
 
 modifyInhabitants :: ([Inhabitant] -> [Inhabitant]) -> Room -> Room
 modifyInhabitants f room = room { inhabitants = f (inhabitants room) }
