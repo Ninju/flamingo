@@ -1,6 +1,6 @@
 module Flamingo.Commands where
 import Control.Monad.Reader (ReaderT, asks, ask, local)
-import Flamingo.Rooms
+import Flamingo.Rooms (Direction(North, East, South, West), exits)
 import Flamingo.Utils
 
 toDirection :: String -> Maybe Direction
