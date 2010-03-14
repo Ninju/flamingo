@@ -7,12 +7,15 @@ import Data.Char (toLower)
 import Data.List (intercalate, delete)
 
 data Direction     = North | East | South | West deriving (Eq, Show, Enum)
-newtype Inhabitant = Name String deriving (Eq, Show)
+newtype Inhabitant = Name String deriving Eq
 newtype RoomID     = RoomID String deriving Eq
 data Room          = Room { exits :: [(Direction, Room)], description :: String, inhabitants :: [Inhabitant], roomID :: RoomID }
 
 instance Eq Room where
   r == r' = roomID r == roomID r'
+
+instance Show Inhabitant where
+  show (Name s) = s
 
 startingRoom :: Room
 startingRoom = Room { roomID      = RoomID "start",
