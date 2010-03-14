@@ -3,7 +3,8 @@ module Flamingo.Rooms (Room(Room), exits, description,
                        startingRoom, crampedCloset) where
 import Control.Concurrent.STM
 import Control.Monad.Reader
-import Data.List
+import Data.Char (toLower)
+import Data.List (intercalate)
 import System.IO
 import Flamingo.Utils
 
@@ -17,4 +18,4 @@ crampedCloset :: Room
 crampedCloset = Room { exits = [(South, startingRoom)], description = "You are in a cramped closet." }
 
 instance Show Room where
-  show r = description r ++ "\nExits: (" ++ intercalate ", " (map (show . fst) $ exits r) ++ ")"
+  show r = description r ++ "\nExits: (" ++ intercalate ", " (map (map toLower . show . fst) $ exits r) ++ ")"
