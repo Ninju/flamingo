@@ -1,17 +1,18 @@
-module Flamingo.Utils (Environment(Env), currentRoom, connection, tvRooms, inhabitant,
+module Flamingo.Utils (Environment(Env), currentRoomID, currentRoom, connection, tvRooms, inhabitant,
                        Connection,
-                       modifyCurrentRoom, modifyRooms, modifyRoom, getRoom, asksM, uCurrentRoom,
+                       modifyCurrentRoom, modifyRooms, modifyRoom, getRoom, asksM,
                        handle, prompt, mGetName, mPutStrLn, mIO, mDisplayPrompt, mGetLine, hDisplayPrompt, (<&>))  where
 import Control.Arrow (Kleisli(Kleisli), runKleisli, (&&&))
 import Control.Concurrent.STM (TVar, atomically, writeTVar, readTVar)
 import Control.Monad.Reader (ReaderT, asks, liftIO, ask, lift)
-import Data.List (delete)
+import Data.List (delete, find)
+import Data.Maybe (fromJust)
 import Network (PortNumber)
 import System.IO (Handle, hFlush, hPutStr, hPutStrLn, hGetLine)
-import Flamingo.Rooms (Room(Room), RoomID(RoomID), Inhabitant, updateRoom)
+import Flamingo.Rooms (Room(Room), RoomID(RoomID), Inhabitant, updateRoom, roomID)
 
 type Connection = (Handle, String, PortNumber)
-data Environment = Env { connection :: Connection, currentRoom :: Room, tvRooms :: TVar [Room], inhabitant :: Inhabitant }
+data Environment = Env { connection :: Connection, currentRoomID :: RoomID, tvRooms :: TVar [Room], inhabitant :: Inhabitant }
 
 handle :: (Handle, a, b) -> Handle
 handle (h,_,_) = h
@@ -31,14 +32,15 @@ hGetName h = do hPutStrLn h "What is your name?"
                   [n] -> return n
                   _   -> hPutStrLn h "Name must not contain spaces." >> hGetName h
 
+currentRoom :: Environment -> IO Room
+currentRoom env = findRoom ((currentRoomID env ==) . roomID) env
 
-
-uCurrentRoom :: Environment -> IO Room
-uCurrentRoom env = getRoom (currentRoom env) env
+findRoom :: (Room -> Bool) -> Environment -> IO Room
+findRoom f env = do rs <- atomically $ readTVar $ tvRooms env
+                    return $ fromJust (find f rs)
 
 getRoom :: Room -> Environment -> IO Room
-getRoom r env = do rs <- atomically $ readTVar $ tvRooms env
-                   return $ head (dropWhile (not . (== r)) rs)
+getRoom r env = findRoom (== r) env
 
 asksM f = ask >>= lift . f
 
@@ -68,4 +70,4 @@ modifyRoom :: (Room -> Room) -> Room -> ReaderT Environment IO ()
 modifyRoom f r = modifyRooms (updateRoom f r)
 
 modifyCurrentRoom :: (Room -> Room) -> ReaderT Environment IO ()
-modifyCurrentRoom f = asksM uCurrentRoom >>= modifyRoom f
+modifyCurrentRoom f = asksM currentRoom >>= modifyRoom f
