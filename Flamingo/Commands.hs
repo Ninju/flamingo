@@ -1,7 +1,7 @@
 module Flamingo.Commands where
 import Control.Monad.Reader (ReaderT, asks, ask, local)
 import Flamingo.Rooms (Direction(North, East, South, West), exits)
-import Flamingo.Utils
+import Flamingo.Utils (Environment, mPutStrLn, currentRoom)
 
 toDirection :: String -> Maybe Direction
 toDirection d = lookup d $ zip ["north", "east", "south", "west"] [North .. West]
