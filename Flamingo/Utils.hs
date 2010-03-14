@@ -47,8 +47,8 @@ mGetLine = mIO hGetLine
 
 modifyRooms :: ([Room] -> [Room]) -> ReaderT Environment IO ()
 modifyRooms f = do tvRs <- asks tvRooms
-                   liftIO $ atomically $ do rs <- readTVar tvRs
-                                            writeTVar tvRs (f rs)
+                   (liftIO . atomically) (readTVar tvRs >>= writeTVar tvRs . f)
+
 
 modifyRoom :: (Room -> Room) -> Room -> ReaderT Environment IO ()
 modifyRoom f r = modifyRooms $ ((f r):) . (delete r)
