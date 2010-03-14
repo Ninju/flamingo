@@ -6,7 +6,7 @@ import Control.Concurrent.STM
 import Control.Monad.Reader
 import Network
 import System.IO
-import {-# SOURCE #-} Flamingo.Rooms (Room(Room))
+import Flamingo.Rooms (Room(Room))
 
 type Connection = (Handle, String, PortNumber)
 data Environment = Env { connection :: Connection, currentRoom :: Room }
