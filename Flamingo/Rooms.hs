@@ -3,7 +3,6 @@ module Flamingo.Rooms (Room(Room), exits, description,
                        startingRoom, crampedCloset) where
 import Data.Char (toLower)
 import Data.List (intercalate)
-import Flamingo.Utils
 
 data Direction = North | East | South | West deriving (Eq, Show, Enum)
 data Room = Room { exits :: [(Direction, Room)], description :: String }
