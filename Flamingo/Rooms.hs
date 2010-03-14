@@ -4,9 +4,10 @@ module Flamingo.Rooms (Room(Room), exits, description,
 import Data.Char (toLower)
 import Data.List (intercalate)
 
-data Direction = North | East | South | West deriving (Eq, Show, Enum)
+data Direction     = North | East | South | West deriving (Eq, Show, Enum)
 newtype Inhabitant = Name String
-data Room = Room { exits :: [(Direction, Room)], description :: String, inhabitants :: [Inhabitant] }
+newtype RoomID     = RoomID String
+data Room          = Room { exits :: [(Direction, Room)], description :: String, inhabitants :: [Inhabitant] }
 
 startingRoom :: Room
 startingRoom = Room { exits = [(North, crampedCloset)],
