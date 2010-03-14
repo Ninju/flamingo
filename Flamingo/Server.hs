@@ -1,5 +1,5 @@
 module Flamingo.Server (run) where
-import Network
+import Network (PortNumber, PortID(PortNumber), accept, listenOn, sClose)
 import System.IO
 import Control.Concurrent
 import Control.Concurrent.STM
