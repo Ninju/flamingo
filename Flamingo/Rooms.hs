@@ -1,34 +1,48 @@
-module Flamingo.Rooms where
-import Control.Concurrent.STM
-import Control.Monad.Reader
-import Data.List
-import Flamingo.Utils
+module Flamingo.Rooms (Room(Room), exits, description, roomID, inhabitants,
+                       RoomID(RoomID),
+                       Direction(North, East, South, West),
+                       Inhabitant(Name),
+                       updateRoom, startingRoom, crampedCloset, moveInhabitant, addInhabitant) where
+import Data.Char (toLower)
+import Data.List (intercalate, delete)
 
-data Environment = Env { connection :: Connection, currentRoom :: Room }
+data Direction     = North | East | South | West deriving (Eq, Show, Enum)
+newtype Inhabitant = Name String deriving Eq
+newtype RoomID     = RoomID String deriving Eq
+data Room          = Room { exits :: [(Direction, Room)], description :: String, inhabitants :: [Inhabitant], roomID :: RoomID }
 
-type Direction = String
-type Inhabitant = String
-data Room = Room { exits :: [(Direction, Room)], description :: String, inhabitants :: TVar [Inhabitant] }
+instance Eq Room where
+  r == r' = roomID r == roomID r'
 
-startingRoom :: STM Room
-startingRoom = do r <- crampedCloset
-                  i <- newTVar []
-                  return Room { exits = [("north", r)],
-                                description = "You find yourself in a round room with a pillar in the middle.",
-                                inhabitants = i }
+instance Show Inhabitant where
+  show (Name s) = s
 
-crampedCloset :: STM Room
-crampedCloset = do r <- startingRoom
-                   i <- newTVar []
-                   return Room { exits = [("south", r)],
-                                 description = "You are in a cramped closet.",
-                                 inhabitants = i }
+startingRoom :: Room
+startingRoom = Room { roomID      = RoomID "start",
+                      exits       = [(North, crampedCloset)],
+                      description = "You find yourself in a round room with a pillar in the middle.",
+                      inhabitants = [] }
+
+crampedCloset :: Room
+crampedCloset = Room { roomID      = RoomID "closet",
+                       exits       = [(South, startingRoom)],
+                       description = "You are in a cramped closet.",
+                       inhabitants = [] }
 
 instance Show Room where
-  show r = description r ++ "\nExits: (" ++ intercalate ", " (map fst $ exits r) ++ ")"
---                                         ++ "\nInhabitants: (" ++ (readTVar (inhabitants r))  ++ ")"
+  show r = description r ++ "\nExits: (" ++ intercalate ", " (map (map toLower . show . fst) $ exits r) ++ ")"
 
-addInhabitant :: Room -> Inhabitant -> IO [Inhabitant]
-addInhabitant r n = atomically $ do i <- readTVar $ inhabitants r
-                                    ; writeTVar (inhabitants r) $! (n : i)
-                                    ; return i
+moveInhabitant :: Inhabitant -> Room -> Room -> [Room] -> [Room]
+moveInhabitant i from target = updateRoom (removeInhabitant i) from . updateRoom (addInhabitant i) target
+
+updateRoom :: (Room -> Room) -> Room -> [Room] -> [Room]
+updateRoom f r = (f r:) . delete r
+
+modifyInhabitants :: ([Inhabitant] -> [Inhabitant]) -> Room -> Room
+modifyInhabitants f room = room { inhabitants = f (inhabitants room) }
+
+addInhabitant :: Inhabitant -> Room -> Room
+addInhabitant i = modifyInhabitants (i:)
+
+removeInhabitant :: Inhabitant -> Room -> Room
+removeInhabitant i = modifyInhabitants (delete i)

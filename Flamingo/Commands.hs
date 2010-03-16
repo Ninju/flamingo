@@ -1,35 +1,33 @@
-module Flamingo.Commands where
-import Control.Concurrent.STM
-import Control.Monad.Reader
-import System.IO
-import Flamingo.Rooms
-import Flamingo.Utils
+module Flamingo.Commands (execute, look) where
+import Control.Arrow ((>>>))
+import Control.Monad.Reader (ReaderT, asks, ask, local)
+import Flamingo.Rooms (Direction(North, East, South, West), exits, moveInhabitant, inhabitants, roomID)
+import Flamingo.Utils (Environment, mPutStrLn, currentRoom, modifyRooms, inhabitant, asksM, getRoom, currentRoomID)
 
-isDirection :: Direction -> Bool
-isDirection = flip elem ["north", "east", "south", "west"]
+toDirection :: String -> Maybe Direction
+toDirection d = lookup d $ zip ["north", "east", "south", "west"] [North .. West]
 
 move :: Direction -> ReaderT Environment IO Environment
-move direction = do current <- asks currentRoom
-                    case lookup direction (exits current) of
-                      Nothing -> do h <- asks (handle . connection)
-                                    liftIO $ hPutStrLn h "You can't move that way."
-                                    ask
-                      Just r  -> do env <- ask
-                                    let newEnv = env { currentRoom = r }
-                                    local (const newEnv) look
-                                    return newEnv
+move direction = do currentR <- asksM currentRoom
+                    case lookup direction (exits currentR) of
+                      Nothing -> mPutStrLn "You can't move that way." >> ask
+                      Just eR -> do i <- asks inhabitant
+                                    r <- (asksM . getRoom . roomID) eR
+                                    modifyRooms (moveInhabitant i currentR r)
+                                    env <- ask
+                                    let env' = env { currentRoomID = roomID r }
+                                    local (const env') look
+                                    return env'
 
 look :: ReaderT Environment IO ()
-look = do r <- asks currentRoom
-          h <- asks (handle . connection)
-          (liftIO . hPutStrLn h . (++ "\n") . show) r
+look = asksM currentRoom >>= mPutStrLn . (++ "\n") . show
 
 command :: [String] -> ReaderT Environment IO Environment
 command ("look":_)    = look >> ask
-command ("move":[])   = (asks (handle . connection) >>= liftIO . (flip hPutStrLn "Enter a direction in which to move.")) >> ask
-command ("move":d:_)  = move d
-command (d:_)         = if isDirection d then move d else command []
-command _             = (asks (handle . connection) >>= liftIO . (flip hPutStrLn "Invalid command")) >> ask
+command ("move":[])   = mPutStrLn "Enter a direction in which to move." >> ask
+command ("move":d:_)  = maybe (mPutStrLn "You can't move that way." >> ask) move (toDirection d)
+command (d:_)         = maybe (command []) move (toDirection d)
+command _             = mPutStrLn "Invalid command" >> ask
 
 execute :: String -> ReaderT Environment IO Environment
 execute = command . words
